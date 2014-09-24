@@ -9,6 +9,7 @@ define(function(require, exports, module) {
   var GenericSync     = require('famous/inputs/GenericSync');
   var MouseSync       = require('famous/inputs/MouseSync');
   var TouchSync       = require('famous/inputs/TouchSync');
+  var FastClick       = require('famous/inputs/FastClick');
   GenericSync.register({'mouse': MouseSync, 'touch': TouchSync});
 
   var PageView = require('views/PageView');
@@ -17,7 +18,6 @@ define(function(require, exports, module) {
   	View.apply(this, arguments);
 
   	_createPageView.call(this);
-    // _setListeners.call(this);
   }
 
   AppView.prototype = Object.create(View.prototype);
@@ -39,12 +39,6 @@ define(function(require, exports, module) {
   AppView.prototype.flipList = function() {
     console.log('inAPP');
   }
-
-  // function _setListeners() {
-  //   this.pageView.on('click', function() {
-  //     console.log('app clicked!');
-  //   });
-  // }
 
   module.exports = AppView;
 })

@@ -5,29 +5,32 @@ define(function(require, exports, module) {
 	var StateModifier   = require('famous/modifiers/StateModifier');
 	var HeaderFooter    = require('famous/views/HeaderFooterLayout');
 	var ImageSurface    = require('famous/surfaces/ImageSurface');
-	var InputSurface 		= require('famous/surfaces/InputSurface');
-	var FastClick 			= require('famous/inputs/FastClick');
+	var EventHandler    = require('famous/core/EventHandler');
 	var ContentView  	  = require('views/ContentView')
 	var GridView  		  = require('views/GridView')
 	var Modifier   		  = require("famous/core/Modifier");
 	var TouchSync   		= require("famous/inputs/TouchSync");
 	var Transitionable  = require("famous/transitions/Transitionable");
 	var Easing   				= require('famous/transitions/Easing');
-	var GridLayout 			= require("famous/views/GridLayout");
-	var Modifier    = require("famous/core/Modifier");
-	var TouchSync   = require("famous/inputs/TouchSync");
-	var Transitionable = require("famous/transitions/Transitionable");
-	var Easing = require('famous/transitions/Easing');
+	var TouchSync   		= require("famous/inputs/TouchSync");
+	var Transitionable 	= require("famous/transitions/Transitionable");
+	var Easing 					= require('famous/transitions/Easing');
+
+	var eventHandler = new EventHandler();
+	var transitionable = new Transitionable();
 
 	function PageView() {
 		View.apply(this, arguments);
 
+		this.contentToggle = false;
+
 		_createLayout.call(this);
 		_createHeader.call(this);
-		_createBody.call(this);
-		console.log('this', this);
+		_createGridView.call(this);
+		_createListView.call(this);
 
-		// _setListeners.call(this);
+		// console.log('this1: ', this)
+		_createEventsRouter.call(this);
 	}
 
 	PageView.prototype = Object.create(View.prototype);
@@ -36,9 +39,6 @@ define(function(require, exports, module) {
 	PageView.DEFAULT_OPTIONS = {
 		headerSize: 44
 	};
-
-	var position = new Transitionable([0,0]);
-	var sync = new TouchSync();
 
 	function _createLayout() {
 		this.layout = new HeaderFooter({
@@ -63,72 +63,67 @@ define(function(require, exports, module) {
 		this.layout.header.add(backgroundSurface);
 	}
 
-	function _createBody() {
-		var grid = new GridLayout({
-			dimensions: [3, 2]
+	function _createGridView() {
+		this.contentView = new ContentView();
+		this.layout.content.add(this.contentView);
+	}
+
+	function _createListView() {
+		this.contentView = new ContentView();
+		// this.contentModifier = new Modifier();
+		// this.add(this.contentModifier).add(this.contentView);
+		// ({
+		// 	// transform: Transform.translate(0, undefined, 50)
+		// 	transform: function() {
+		// 		return Transform.translate(this.transitionable.get(), 0, 0);
+		// 	}.bind(this)
+		// });
+	}
+
+	// creates a router to allow binding of emitted events to PageView
+	function _createEventsRouter () {
+		// this will call animateContentIn when 'flipImage' is heard
+		// and it will pass in the 'this' that _createEventsRouter is
+		// attached to as the paramater for animateContentIn
+		eventHandler.on('flipImage', this.animateContentIn.bind(this));
+	}
+
+	// animateContentIn will ONLY run if the 'this' it is bound to is 
+	// an instance of PageView
+	PageView.prototype.animateContentIn = function(e) {
+		console.log('in animateContentIn')
+		console.log(e);
+		// this.showNewView();
+		// this.layout.content.set(gridView[0]);
+		// transitionable.setTransform(Transform.translate(0,0,0), {
+		// 	duration: 400,
+		// 	curve: Easing.outCubic
+		// });
+	}
+
+	PageView.prototype.showNewView = function() {
+		this.contentModifier.setTransform(Transform.translate(0,0,0), {
+			duration: 400,
+			curve: 'easeOut'
 		});
+		console.log('finish transforming');
+	};
 
-		var gridView = [];
-		grid.sequenceFrom(gridView);
+	function _setListeners() {
+		this.contentView.on('contentToggle', this.toggleContent.bind(this));
+	}
 
-		imgObject = {
-			1: './assets/pic1.jpg',
-			2: './assets/pic2.jpg',
-			3: './assets/pic3.jpg',
-			4: './assets/pic4.jpg',
-			5: './assets/pic5.jpg',
-			6: './assets/pic6.jpg'
-		};
+	PageView.prototype.toggleContent = function() {
+		this.contentToggle ? this.showList() : this.showGrid();
+	};
 
-		for(var i = 1; i < 8; i++) {
-			this.gridBox = new Surface({
-	  		// content: imgObject[1+i],
-	  		content: i,
-	  		size: [undefined, undefined],
-	  		properties: {
-	  			backgroundImage: 'url('+	imgObject[i] + ')',
-	  			backgroundRepeat: 'no-repeat',
-	  			backgroundSize: '100% 100%',
-	  			// backgroundColor: "hsl(" + (i * 300 / 6) + ","+ (i * 10) + "%, "+ (i * 18) +"%)",
-	  			color: "#404040",
-	  			lineHeight: '200px',
-	  			textAlign: 'center',
-	  			class: i
-	  		}
-	  	});
+	PageView.prototype.showList = function() {
 
-	  	gridView.push(this.gridBox);
-	  }
+	};
 
-	  function _setListeners() {
-		  for(var i = 0; i < gridView.length; i++) {
-		  	var holder = gridView[i];
-		  	// console.log(gridView[i]);
-		  	function _listening() {
-		  		this.on('click', function() {
-		  		  this.eventHandler.downstream.push('flipBoard');
-		  			console.log(this.content);
-		  		}.bind(this))
-		  	};
-		  	_listening.call(holder);
-		  }
-	  }
-	  console.log(gridView);
-	  _setListeners.call(this);
+	PageView.prototype.showGrid = function() {
 
-	  // this.contentModifier = new Modifier({
-	  // 	transform: Transform.translate(0, this.options.screenHeight, 50)
-	  // });
-this.layout.content.add(grid);
-}
-
-
-PageView.prototype.animateContentIn = function(e) {
-	console.log('animateContentIn');
-
-	this.options.index = e.index;
-
-}
+	};
 
 module.exports = PageView;
 })
