@@ -1,91 +1,90 @@
 /*** ContentView.js ***/
 
-define(function(require, exports, module) {
-  var View          = require('famous/core/View');
-  var Surface       = require('famous/core/Surface');
-  var Transform     = require('famous/core/Transform');
-  var StateModifier = require('famous/modifiers/StateModifier');
-  var ImageSurface  = require('famous/surfaces/ImageSurface');
-  var PageView      = require('views/PageView')
-  var GridLayout    = require("famous/views/GridLayout");
-  var Modifier      = require("famous/core/Modifier");
+define(function (require, exports, module) {
+	var View          = require('famous/core/View');
+	var Surface       = require('famous/core/Surface');
+	var Transform     = require('famous/core/Transform');
+	var StateModifier = require('famous/modifiers/StateModifier');
+	var Modifier      = require('famous/core/Modifier');
+	var PageView      = require('views/PageView');
+	var GridView      = require('views/GridView');
+	var ListView			= require('views/ListView');
 
-  // defines grid view on the same scope as PageView to allow accessibility
-  var gridView = [];
+	function ContentView() {
+		View.apply(this, arguments);
 
-  function ContentView() {
-    View.apply(this, arguments);
+		this.contentToggle = false;
+		// _createListView.call(this);
+		_createBoard.call(this);
+	}
 
-    _createGrid.call(this);
+	var gridEventHandler = GridView.gridEventHandler;
+	console.log(gridEventHandler)
 
-    }
+	ContentView.prototype = Object.create(View.prototype);
+	ContentView.prototype.constructor = ContentView;
 
-    ContentView.prototype = Object.create(View.prototype);
-    ContentView.prototype.constructor = ContentView;
+	ContentView.DEFAULT_OPTIONS = {};
 
-    ContentView.DEFAULT_OPTIONS = {};
-    function _createGrid() {
+	function _createBoard() {
+		this.board = new GridView();
+		this.add(this.board);
+	}
 
-        // defines Grid Layout
-        this.grid = new GridLayout({
-            dimensions: [3, 2]
-        });
+	function _createListView() {
+		this.board = new ListView();
+		this.add(this.board);
+	}
 
-        this.contentModifier = new Modifier({
-            // duration: 400,
-            // curve: 'easeOut'
-            transform: Transform.translate(0,0,0)
-        });
-
-        // creates an array of all the surfaces of the grid
-        this.grid.sequenceFrom(gridView);
-
-        imgObject = {
-            1: './assets/pic1.jpg',
-            2: './assets/pic2.jpg',
-            3: './assets/pic3.jpg',
-            4: './assets/pic4.jpg',
-            5: './assets/pic5.jpg',
-            6: './assets/pic6.jpg'
-        };
-
-        // protects and privatizes gridbox
-        var gridBox;
-
-        for(var i = 1; i < 8; i++) {
-            gridBox = new ImageSurface({
-            // content: imgObject[1+i],
-            content: imgObject[i],
-            index: i,
-            size: [undefined, undefined],
-            properties: {
-                lineHeight: '200px',
-                textAlign: 'center',
-                class: i
-            }
-        });
-            gridView.push(gridBox);
-        }
-
-        function _setEmiters() {
-            for(var i = 0; i < gridView.length; i++) {
-                var holder = gridView[i];
-                function _listening() {
-                    this.on('click', function() {
-                        eventHandler.emit('flipImage');
-                        console.log(this);
-                    // _animateContentIn.call(this);
-                }.bind(this))
-                };
-                _listening.call(holder);
-            }
-        }
-        _setEmiters.call(this);
-
-        // Apply modifier to content
-        this.add(this.contentModifier).add(this.grid);
-        this.add(this.grid);
-    }
-    
-    module.exports = ContentView;
+	function _setListeners() {
+		this.on('blowImage', function() {
+			console.log('hi');
+		});
+	}
+	module.exports = ContentView;
 });
+
+//     // creates a router to allow binding of emitted events to PageView
+//     function _createEventsRouter () {
+//         // this will call animateContentIn when 'flipImage' is heard
+//         // and it will pass in the 'this' that _createEventsRouter is
+//         // attached to as the paramater for animateContentIn
+//         eventHandler.on('flipImage', this.animateContentIn.bind(this));
+//       }
+
+//     // animateContentIn will ONLY run if the 'this' it is bound to is 
+//     // an instance of PageView
+//     PageView.prototype.animateContentIn = function(e) {
+//     	console.log('in animateContentIn')
+//     	console.log(e);
+//         // this.showNewView();
+//         // this.layout.content.set(gridView[0]);
+//         // transitionable.setTransform(Transform.translate(0,0,0), {
+//         //  duration: 400,
+//         //  curve: Easing.outCubic
+//         // });
+// }
+
+// PageView.prototype.showNewView = function() {
+// 	this.contentModifier.setTransform(Transform.translate(0,0,0), {
+// 		duration: 400,
+// 		curve: 'easeOut'
+// 	});
+// 	console.log('finish transforming');
+// };
+
+// function _setListeners() {
+// 	this.contentView.on('contentToggle', this.toggleContent.bind(this));
+// }
+
+// PageView.prototype.toggleContent = function() {
+// 	this.contentToggle ? this.showList() : this.showGrid();
+// };
+
+// PageView.prototype.showList = function() {
+
+// };
+
+// PageView.prototype.showGrid = function() {
+
+// };
